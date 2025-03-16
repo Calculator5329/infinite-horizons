@@ -7,7 +7,7 @@ import pygame
 import threading
 import random
 from ui import show_main_menu, show_loading_screen, show_save_selection_menu, get_custom_save_name, draw_progress_bar
-from utils import list_save_files, get_save_filename, WIDTH, HEIGHT, STAR_FIELD_RANGE, FPS
+from utils import list_save_files, get_save_filename, WIDTH, HEIGHT, STAR_FIELD_RANGE, FPS, PLANET_COUNT
 from game import run_game
 from save_funcs import load_game
 from classes.planet import Planet
@@ -67,9 +67,10 @@ def main():
         current_save_filename = get_save_filename(custom_name) if custom_name else get_save_filename()
         planets = [Planet(random.randint(-STAR_FIELD_RANGE, STAR_FIELD_RANGE),
                 random.randint(-STAR_FIELD_RANGE, STAR_FIELD_RANGE), planet_id=_ ,save_folder=current_save_filename)
-         for _ in range(10)]
+         for _ in range(PLANET_COUNT)]
         spaceship_data = None
 
+    
     run_game(screen, planets, spaceship_data, current_save_filename)
 
 if __name__ == "__main__":

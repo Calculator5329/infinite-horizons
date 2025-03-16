@@ -16,9 +16,10 @@ DARK_GRAY = (20, 20, 20)
 MINI_MAP_WIDTH = 200
 MINI_MAP_HEIGHT = 200
 MINI_MAP_SCALE = 0.05
-STAR_FIELD_RANGE = 5000
-NUM_STARS = 2500
+STAR_FIELD_RANGE = 10000
+NUM_STARS = 5000
 FPS = 60
+PLANET_COUNT = 25
 
 # Global dictionary to cache scaled sprites.
 sprite_cache = {}

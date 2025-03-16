@@ -28,6 +28,8 @@ class Spaceship:
 
         self.x = x
         self.y = y
+        self.width = 170
+        self.height = 170
         self.angle = 0
         self.speed = 5
         self.boost_multiplier = 1
@@ -82,6 +84,29 @@ class Spaceship:
         
         return camera_x, camera_y
 
+    # In your Spaceship class (spaceship.py)
+    def update_landed(self, keys, planet):
+        speed = 2  # Adjust as needed for on-planet speed
+        if keys[pygame.K_LEFT]:
+            self.x -= speed
+        if keys[pygame.K_RIGHT]:
+            self.x += speed
+        if keys[pygame.K_UP]:
+            self.y -= speed
+        if keys[pygame.K_DOWN]:
+            self.y += speed
+
+        # Keep the spaceship within the bounds of the *scaled* planet
+        #This is a basic bounding, you can improve on this.
+        scaled_radius = planet.res * 5 / 2
+        min_x = planet.x * 5 - scaled_radius
+        max_x = planet.x * 5 + scaled_radius - self.width
+        min_y = planet.y * 5- scaled_radius
+        max_y = planet.y * 5 + scaled_radius - self.height
+
+        self.x = max(min_x, min(self.x, max_x))
+        self.y = max(min_y, min(self.y, max_y))
+        
     def draw(self, screen, camera_x, camera_y):
         """
         Draw the spaceship on the screen.

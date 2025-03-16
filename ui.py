@@ -16,6 +16,7 @@ BUTTON_FONT = pygame.font.SysFont(None, 40)
 PROGRESS_FONT = pygame.font.SysFont(None, 48)
 INPUT_FONT = pygame.font.SysFont(None, 72)
 PROMPT_FONT = pygame.font.SysFont(None, 60)
+SMALL_FONT = pygame.font.SysFont("arial", 16)  # Used for deep space messages
 
 # Define the world region (in game units) that the mini-map displays.
 MINIMAP_WORLD_WIDTH = 3840
@@ -254,16 +255,37 @@ def draw_mini_map(surface, player, planets):
     """
     global _cached_mini_map_bg, _cached_mini_map_center
     center = (player.x, player.y)
-    threshold = 5  # Update if player moves more than 10 units.
+    threshold = 5  # Update if player moves more than 5 units.
     if (_cached_mini_map_bg is None or _cached_mini_map_center is None or
         abs(center[0] - _cached_mini_map_center[0]) > threshold or
         abs(center[1] - _cached_mini_map_center[1]) > threshold):
-        from utils import stars
+        from utils import stars  # ensure stars are imported
         _cached_mini_map_bg = pre_render_mini_map_background(center, stars, planets)
         _cached_mini_map_center = center
 
     # Copy the cached background to overlay the dynamic player marker.
     mini_map_surface = _cached_mini_map_bg.copy()
-    # Since the mini-map is centered on the player, the player's marker is at the center.
+    # Determine if the player has left the star field range.
+    deep_space = abs(player.x) > STAR_FIELD_RANGE or abs(player.y) > STAR_FIELD_RANGE
+
+    # Draw the player marker at the center.
     pygame.draw.circle(mini_map_surface, (255, 0, 0), (MINI_MAP_WIDTH // 2, MINI_MAP_HEIGHT // 2), 2)
+
+    # Draw border: if in deep space, use green border; otherwise white.
+    border_color = (0, 255, 0) if deep_space else WHITE
+    pygame.draw.rect(mini_map_surface, border_color, mini_map_surface.get_rect(), 1)
+
+    # If deep space, overlay the message.
+    if deep_space:
+        overlay = pygame.Surface((MINI_MAP_WIDTH, MINI_MAP_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 150))  # dark translucent overlay
+        mini_map_surface.blit(overlay, (0, 0))
+        text1 = SMALL_FONT.render("ENTERING DEEPSPACE", True, (0, 255, 0))
+        text2 = SMALL_FONT.render("NO RECORDS FOUND", True, (0, 255, 0))
+        rect1 = text1.get_rect(center=(MINI_MAP_WIDTH // 2, MINI_MAP_HEIGHT // 2 - 10))
+        rect2 = text2.get_rect(center=(MINI_MAP_WIDTH // 2, MINI_MAP_HEIGHT // 2 + 10))
+        mini_map_surface.blit(text1, rect1)
+        mini_map_surface.blit(text2, rect2)
+        
+    # Blit the mini-map to the main surface.
     surface.blit(mini_map_surface, (WIDTH - MINI_MAP_WIDTH - 10, 10))

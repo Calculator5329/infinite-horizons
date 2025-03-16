@@ -36,7 +36,7 @@ class Planet:
         self.x = x
         self.y = y
         self.id = planet_id
-        self.res = random.choice([64, 128, 256])
+        self.res = random.choice([128, 256])
         self.type = random.choice(['Terrestrial', 'Gas Giant', 'Ice Giant', 'Dwarf'])
         self.minerals = random.sample(
             ['Iron', 'Gold', 'Silver', 'Copper', 'Uranium', 'Platinum'],
@@ -45,6 +45,7 @@ class Planet:
         self.habitability = random.uniform(0, 1)  # 0 (inhospitable) to 1 (earth-like)
         self.name = self.generate_name()
         self.scale = random.uniform(1.0, 5.0)
+        self.landing_scale = 5.0
         self.color = WHITE
         
         self.cached_scaled_sprite = None
@@ -66,7 +67,7 @@ class Planet:
         suffixes = ['I', 'II', 'III', 'IV', 'V', 'Prime', 'Major']
         return f"{random.choice(prefixes)}-{random.choice(suffixes)}"
 
-    def draw(self, surface, camera_x, camera_y):
+    def draw(self, surface, camera_x, camera_y, landing=False):
         """
         Draw the planet on the given surface.
         
@@ -80,8 +81,8 @@ class Planet:
             scaled_height = int(self.sprite.get_height() * self.scale)
             self.cached_scaled_sprite = pygame.transform.scale(self.sprite, (scaled_width, scaled_height))
             self.cached_scale = self.scale
-
-        scaled_sprite = get_cached_sprite(self.sprite, self.scale)
+            
+        scaled_sprite = get_cached_sprite(self.sprite, self.scale * self.landing_scale if landing else self.scale)
         sprite_rect = scaled_sprite.get_rect(center=(int(self.x - camera_x), int(self.y - camera_y)))
         surface.blit(scaled_sprite, sprite_rect)
         font = PLANET_FONT
@@ -107,6 +108,7 @@ class Planet:
         self.theme_name = data["theme_name"]
         self.scale = data["scale"]
         self.res = data["res"]
+        self.landing_scale = 5.0
         self.sprite = pygame.image.load(data["sprite_filename"]).convert_alpha()
         self.pil_sprite = surface_to_pil(self.sprite)
         # Initialize cache attributes so they exist later.
