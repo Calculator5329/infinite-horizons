@@ -1,3 +1,8 @@
+"""
+Module: save_funcs
+Handles saving and loading game state.
+"""
+
 import os
 import json
 import pygame
@@ -5,32 +10,21 @@ from classes.planet import Planet
 
 def save_game(planets, spaceship=None, save_name="default", progress_callback=None):
     """
-    Saves the game into a folder structure:
+    Save the game state including planets and spaceship.
     
-        saves/
-            save_name/
-                data.json         <- game data file
-                sprites/
-                    planet_0.png  <- planet sprites (sequentially numbered)
-                    planet_1.png
-                    ...
-    
-    `save_name` is actually the pathway to the save :/
-    """   
-    save_folder = save_name
-    # Use save_folder directly.
-    if not os.path.exists(save_folder):
-        os.makedirs(save_folder)
-    
-    sprites_folder = os.path.join(save_folder, "sprites")
-    if not os.path.exists(sprites_folder):
-        os.makedirs(sprites_folder)
+    :param planets: List of Planet objects.
+    :param spaceship: Spaceship object (optional).
+    :param save_name: Save folder name/path.
+    :param progress_callback: Optional callback to report progress.
+    """
+    os.makedirs(save_name, exist_ok=True)
+    sprites_folder = os.path.join(save_name, "sprites")
+    os.makedirs(sprites_folder, exist_ok=True)
     
     planets_data = []
     total = len(planets)
     for i, planet in enumerate(planets):
         sprite_filename = os.path.join(sprites_folder, f"planet_{i}.png")
-        # Store planet data (including scale).
         planet_data = {
             "x": planet.x,
             "y": planet.y,
@@ -58,20 +52,13 @@ def save_game(planets, spaceship=None, save_name="default", progress_callback=No
 
 def load_game(save_name, progress_callback=None):
     """
-    Loads the game from the given save.
+    Load the game state from the given save folder.
     
-    Expects the save folder structure:
-    
-        saves/
-            save_name/
-                data.json
-                sprites/
-                    planet_0.png, planet_1.png, etc.
-    
-    Returns a tuple: (loaded_planets, spaceship_data).
+    :param save_name: Save folder name/path.
+    :param progress_callback: Optional callback to report progress.
+    :return: Tuple (list of Planet objects, spaceship data dictionary).
     """
-    save_folder = save_name
-    data_filename = os.path.join(save_folder, "data.json")
+    data_filename = os.path.join(save_name, "data.json")
     with open(data_filename, "r") as f:
         save_data = json.load(f)
     planets_data = save_data["planets"]
