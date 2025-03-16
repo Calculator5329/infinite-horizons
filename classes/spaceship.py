@@ -6,9 +6,9 @@ Defines the Spaceship class which handles movement, boosting, and drawing.
 import pygame
 import random
 import math
+from utils import WIDTH, HEIGHT
 
 MARGIN = 200
-WIDTH, HEIGHT = 1024, 768
 
 class Spaceship:
     _original_sprite = None  # Class variable to store the default sprite.
@@ -31,6 +31,7 @@ class Spaceship:
         self.angle = 0
         self.speed = 5
         self.boost_multiplier = 1
+        self.boost_speed = 3.5
         self.boosting = False
         self.scale_factor = scale_factor
         self.sprite = self.get_scaled_sprite(Spaceship._original_sprite)
@@ -51,7 +52,7 @@ class Spaceship:
         :return: Updated camera offsets (camera_x, camera_y).
         """
         if keys[pygame.K_SPACE]:
-            self.boost_multiplier = 2
+            self.boost_multiplier = self.boost_speed
             self.boosting = True
             self.sprite = self.get_scaled_sprite(Spaceship._sprite_boost)
         else:

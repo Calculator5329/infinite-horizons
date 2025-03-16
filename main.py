@@ -7,20 +7,20 @@ import pygame
 import threading
 import random
 from ui import show_main_menu, show_loading_screen, show_save_selection_menu, get_custom_save_name, draw_progress_bar
-from utils import list_save_files, get_save_filename, WIDTH, HEIGHT
+from utils import list_save_files, get_save_filename, WIDTH, HEIGHT, STAR_FIELD_RANGE, FPS
 from game import run_game
 from save_funcs import load_game
 from classes.planet import Planet
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
     pygame.display.set_caption("Infinite Horizons")
     clock = pygame.time.Clock()
 
     choice = show_main_menu(screen)
     current_save_filename = None
-
+    
     if choice == "l":
         save_files = list_save_files()
         if save_files:
@@ -52,7 +52,7 @@ def main():
                 screen.fill((0, 0, 0))
                 draw_progress_bar(screen, load_progress)
                 pygame.display.flip()
-                clock.tick(60)
+                clock.tick(FPS)
             thread.join()
             planets = loaded_result["planets"]
             spaceship_data = loaded_result["spaceship_data"]
@@ -65,15 +65,9 @@ def main():
         custom_name = get_custom_save_name(screen)
         show_loading_screen(screen, "Loading... Please wait")
         current_save_filename = get_save_filename(custom_name) if custom_name else get_save_filename()
-        planets = [
-            Planet(
-                random.randint(-1000, 1000),
-                random.randint(-1000, 1000),
-                save_folder=current_save_filename,
-                planet_id=i
-            )
-            for i in range(10)
-        ]
+        planets = [Planet(random.randint(-STAR_FIELD_RANGE, STAR_FIELD_RANGE),
+                random.randint(-STAR_FIELD_RANGE, STAR_FIELD_RANGE), planet_id=_ ,save_folder=current_save_filename)
+         for _ in range(10)]
         spaceship_data = None
 
     run_game(screen, planets, spaceship_data, current_save_filename)

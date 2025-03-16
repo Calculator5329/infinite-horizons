@@ -5,11 +5,15 @@ Generates planet sprites and handles drawing and loading from save data.
 """
 
 import pygame
+if not pygame.font.get_init():
+    pygame.font.init()
 import random
 import os
 from PIL import Image
 from planet_texture import generate_and_save_planet_sprite, pil_to_pygame
+from utils import get_cached_sprite
 
+PLANET_FONT = pygame.font.SysFont(None, 20)
 WHITE = (255, 255, 255)
 
 def surface_to_pil(surface):
@@ -42,6 +46,11 @@ class Planet:
         self.name = self.generate_name()
         self.scale = random.uniform(1.0, 5.0)
         self.color = WHITE
+        
+        self.cached_scaled_sprite = None
+        self.cached_scale = None
+        self.cached_mini_sprite = None
+        self.cached_mini_scale = None
 
         # Generate planet sprite and associated theme.
         temp = random.randint(-50, 50)
@@ -65,13 +74,18 @@ class Planet:
         :param camera_x: Camera X offset.
         :param camera_y: Camera Y offset.
         """
-        scaled_width = int(self.sprite.get_width() * self.scale)
-        scaled_height = int(self.sprite.get_height() * self.scale)
-        scaled_sprite = pygame.transform.scale(self.sprite, (scaled_width, scaled_height))
+        # Update cached main sprite if scale changed
+        if self.cached_scaled_sprite is None or self.cached_scale != self.scale:
+            scaled_width = int(self.sprite.get_width() * self.scale)
+            scaled_height = int(self.sprite.get_height() * self.scale)
+            self.cached_scaled_sprite = pygame.transform.scale(self.sprite, (scaled_width, scaled_height))
+            self.cached_scale = self.scale
+
+        scaled_sprite = get_cached_sprite(self.sprite, self.scale)
         sprite_rect = scaled_sprite.get_rect(center=(int(self.x - camera_x), int(self.y - camera_y)))
         surface.blit(scaled_sprite, sprite_rect)
-        font = pygame.font.SysFont(None, 20)
-        name_surf = font.render(self.name, True, WHITE)
+        font = PLANET_FONT
+        name_surf = font.render(self.name, True, (255, 255, 255))
         surface.blit(name_surf, (sprite_rect.x, sprite_rect.y - 20))
 
     @classmethod
@@ -95,4 +109,9 @@ class Planet:
         self.res = data["res"]
         self.sprite = pygame.image.load(data["sprite_filename"]).convert_alpha()
         self.pil_sprite = surface_to_pil(self.sprite)
+        # Initialize cache attributes so they exist later.
+        self.cached_scaled_sprite = None
+        self.cached_scale = None
+        self.cached_mini_sprite = None
+        self.cached_mini_scale = None
         return self
