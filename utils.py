@@ -35,7 +35,7 @@ def get_save_filename(custom_name=None):
         os.makedirs(save_dir)
     if custom_name:
         # Ensure the custom name ends with .json.
-        filename = custom_name if custom_name.endswith(".json") else custom_name + ".json"
+        filename = custom_name 
     else:
         now = datetime.now()
         formatted = now.strftime("%m%d%y%H%M")

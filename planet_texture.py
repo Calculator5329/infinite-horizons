@@ -325,17 +325,3 @@ def generate_and_save_planet_sprite(resolution, avg_temperature, star_type="g", 
     planet_image.save(file_path)
     print(f"Saved planet sprite to: {file_path}")
     return planet_image, theme
-
-#######################
-# Testing (Run as script)
-#######################
-
-if __name__ == "__main__":
-    # For testing, generate 5 planet sprites.
-    for i in range(5):
-        # Random resolution: choose among 64, 128, 256.
-        res = random.choice([64, 128, 256])
-        temp = random.randint(-50, 50)
-        planet_img, used_theme = generate_and_save_planet_sprite(res, temp, planet_index=i)
-        # If needed, you can convert the PIL image to a pygame surface:
-        # pygame_surface = pil_to_pygame(planet_img)

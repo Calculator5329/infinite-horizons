@@ -7,7 +7,7 @@ from save_funcs import save_game
 import threading
 import time
 
-def run_game(screen, planets, spaceship_data, save_filename=None):
+def run_game(screen, planets, spaceship_data, save_folder=None):
     clock = pygame.time.Clock()
     stars = generate_stars()
 
@@ -17,9 +17,10 @@ def run_game(screen, planets, spaceship_data, save_filename=None):
     else:
         player = Spaceship(0, 0)
 
-    # Initial save.
-    # If we already have a save filename (from loading or custom input), use it.
-    initial_save_filename = save_filename if save_filename else get_save_filename()
+    # Use the provided save_folder if given; otherwise, use get_save_filename.
+    # Since get_save_filename returns an OS path, use it directly.
+    initial_save_folder = save_folder if save_folder else get_save_filename()
+    
     save_progress = 0.0
     save_in_progress = True
     def save_progress_callback(progress):
@@ -27,7 +28,8 @@ def run_game(screen, planets, spaceship_data, save_filename=None):
         save_progress = progress
     def save_thread_func():
         nonlocal save_in_progress
-        save_game(planets, spaceship=player, save_folder=initial_save_filename, progress_callback=save_progress_callback)
+        # Pass the folder path directly.
+        save_game(planets, spaceship=player, save_name=initial_save_folder, progress_callback=save_progress_callback)
         save_in_progress = False
     thread = threading.Thread(target=save_thread_func)
     thread.start()
@@ -41,8 +43,8 @@ def run_game(screen, planets, spaceship_data, save_filename=None):
         pygame.display.flip()
         clock.tick(60)
     thread.join()
-    print(f"Initial save created: {initial_save_filename}")
-
+    print(f"Initial save created: {initial_save_folder}")
+    
     # Main game loop.
     camera_x, camera_y = 0, 0
     running = True
@@ -77,7 +79,7 @@ def run_game(screen, planets, spaceship_data, save_filename=None):
         save_progress = progress
     def final_save_thread_func():
         nonlocal save_in_progress
-        save_game(planets, spaceship=player, save_folder=final_save_filename, progress_callback=final_save_progress_callback)
+        save_game(planets, spaceship=player, save_name=final_save_filename, progress_callback=final_save_progress_callback)
         save_in_progress = False
     thread = threading.Thread(target=final_save_thread_func)
     thread.start()
