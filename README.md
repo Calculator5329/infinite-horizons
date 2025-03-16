@@ -14,12 +14,35 @@ A work in progress.
    cd infinite-horizons
    ```
 
-3. **Create a Python 3.10.11 Virtual Environment**  
-   ```bash
-   python3.10 -m venv venv
-   ```
-   If your system uses `python` or `py` as the command for Python 3.10.11, adjust accordingly.
-   If this doesn't work, ensure you have python 3.10.11 downloaded.
+3. **Ensure Python 3.10.11 is Installed**
+   - Check your Python version:
+     ```bash
+     python --version
+     ```
+     or
+     ```bash
+     python3 --version
+     ```
+   - If it does **not** show `Python 3.10.11`, install it:
+     - **Windows:** Download from [python.org](https://www.python.org/downloads/release/python-31011/)
+     - **Mac/Linux:** Use a package manager like `brew` or `apt`
+       ```bash
+       sudo apt install python3.10
+       ```
+       or
+       ```bash
+       brew install python@3.10
+       ```
+
+4. **Create a Virtual Environment Using Python 3.10.11**
+   - If you installed Python 3.10.11, run:
+     ```bash
+     python3.10 -m venv venv
+     ```
+   - If `python3.10` is not found, try:
+     ```bash
+     python -m venv venv
+     ```
 
 5. **Activate the Virtual Environment**  
    - On **Linux/macOS**:
@@ -42,4 +65,3 @@ After installing dependencies, you can run the main script or module as needed:
 ```bash
 python main.py
 ```
-(Replace `main.py` with the actual entry point if it’s named differently.)
