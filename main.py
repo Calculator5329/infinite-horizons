@@ -24,6 +24,7 @@ def main():
     # Load or create game data.
     if choice == "l":
         save_files = list_save_files()
+        print("Save files" + str(save_files))
         if save_files:
             selected_save = show_save_selection_menu(screen, save_files)
             current_save_filename = selected_save  # Persist the loaded save's filename.
@@ -66,7 +67,7 @@ def main():
         
     
         planets = [Planet(random.randint(-STAR_FIELD_RANGE, STAR_FIELD_RANGE),
-               random.randint(-STAR_FIELD_RANGE, STAR_FIELD_RANGE))
+               random.randint(-STAR_FIELD_RANGE, STAR_FIELD_RANGE), id=_ ,save_name=current_save_filename)
         for _ in range(10)]
         spaceship_data = None
 

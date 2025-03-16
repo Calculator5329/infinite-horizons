@@ -15,7 +15,7 @@ def save_game(planets, spaceship=None, save_name="default", progress_callback=No
                     planet_1.png
                     ...
     
-    `save_name` is the name of the save (e.g. "test" or "MySave1").
+    `save_name` is actually the pathway to the save :/
     """   
     save_folder = save_name
     # Use save_folder directly.
@@ -30,13 +30,11 @@ def save_game(planets, spaceship=None, save_name="default", progress_callback=No
     total = len(planets)
     for i, planet in enumerate(planets):
         sprite_filename = os.path.join(sprites_folder, f"planet_{i}.png")
-        # Save the PIL sprite.
-        planet.pil_sprite.save(sprite_filename)
         # Store planet data (including scale).
         planet_data = {
             "x": planet.x,
             "y": planet.y,
-            "radius": planet.radius,
+            "res": planet.res,
             "color": planet.color,
             "type": planet.type,
             "minerals": planet.minerals,
@@ -72,7 +70,7 @@ def load_game(save_name, progress_callback=None):
     
     Returns a tuple: (loaded_planets, spaceship_data).
     """
-    save_folder = os.path.join("saves", save_name)
+    save_folder = save_name
     data_filename = os.path.join(save_folder, "data.json")
     with open(data_filename, "r") as f:
         save_data = json.load(f)

@@ -3,6 +3,10 @@ import random
 import math
 from planet_texture import generate_and_save_planet_sprite, pil_to_pygame
 from PIL import Image
+import os
+
+# Define the WHITE color
+WHITE = (255, 255, 255)
 
 def surface_to_pil(surface):
     """Convert a Pygame surface to a PIL image."""
@@ -11,31 +15,29 @@ def surface_to_pil(surface):
     return Image.frombytes("RGBA", size, data_str)
 
 class Planet:
-    def __init__(self, x, y):
-        # This constructor is used for new planets.
+    def __init__(self, x, y, save_name, id):
+        # Ensure the correct save folder exists
+        save_folder = save_name
+        if not os.path.exists(save_folder):
+            os.makedirs(save_folder)
+
         self.x = x
         self.y = y
-        self.radius = random.randint(20, 100)
-        self.color = random.choice([
-            (200, 100, 50),   # Reddish
-            (50, 150, 200),   # Bluish
-            (150, 150, 150),  # Gray
-            (0, 255, 0)       # Greenish
-        ])
+        self.id = id
+        self.res = random.choice([64, 128, 256])
         self.type = random.choice(['Terrestrial', 'Gas Giant', 'Ice Giant', 'Dwarf'])
         self.minerals = random.sample(
-            ['Iron', 'Gold', 'Silver', 'Copper', 'Uranium', 'Platinum'], 
+            ['Iron', 'Gold', 'Silver', 'Copper', 'Uranium', 'Platinum'],
             random.randint(1, 3)
         )
         self.habitability = random.uniform(0, 1)  # 0 (inhospitable) to 1 (earth-like)
         self.name = self.generate_name()
-        # New: scale factor for drawing larger (or smaller) planets.
         self.scale = random.uniform(1.0, 5.0)
-        # Choose a random resolution and average temperature for sprite generation.
-        res = random.choice([64, 128, 256])
-        temp = random.randint(-50, 50)
+        self.color = WHITE
         # Generate the planet sprite (returns a PIL image and the chosen theme).
-        self.pil_sprite, theme = generate_and_save_planet_sprite(res, temp)
+        temp = random.randint(-50, 50)
+        self.pil_sprite, theme = generate_and_save_planet_sprite(self.res, temp, planet_index=id, save_folder=save_folder)
+
         # Convert the PIL sprite to a pygame Surface.
         self.sprite = pil_to_pygame(self.pil_sprite)
         self.theme_name = theme["name"]
@@ -65,7 +67,6 @@ class Planet:
         self = cls.__new__(cls)  # Bypass __init__
         self.x = data["x"]
         self.y = data["y"]
-        self.radius = data["radius"]
         self.color = tuple(data["color"])
         self.type = data["type"]
         self.minerals = data["minerals"]
@@ -77,4 +78,5 @@ class Planet:
         self.sprite = pygame.image.load(data["sprite_filename"]).convert_alpha()
         # Convert the loaded sprite to a PIL image.
         self.pil_sprite = surface_to_pil(self.sprite)
+        self.res = data["res"] #Add this line
         return self

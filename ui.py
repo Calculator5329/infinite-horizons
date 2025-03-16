@@ -42,27 +42,40 @@ def get_custom_save_name(screen):
     return user_text.strip()
 
 def draw_mini_map(surface, player, planets):
-    mini_map_surface = pygame.Surface((MINI_MAP_WIDTH, MINI_MAP_HEIGHT))
+    mini_map_surface = pygame.Surface((MINI_MAP_WIDTH, MINI_MAP_HEIGHT), pygame.SRCALPHA)
     mini_map_surface.fill(DARK_GRAY)
     center_x = MINI_MAP_WIDTH // 2
     center_y = MINI_MAP_HEIGHT // 2
+    SCALE_FACTOR = 0.05  # Minimap scaling factor
+    DOWNSCALE_FACTOR = 20  # How much to shrink the planet textures
 
-    # Assumes that stars is a global or you pass it in; you might want to modify this.
     from utils import stars  
     for star in stars:
-        mini_star_x = round((star[0] - player.x) * MINI_MAP_SCALE) + center_x
-        mini_star_y = round((star[1] - player.y) * MINI_MAP_SCALE) + center_y
+        mini_star_x = round((star[0] - player.x) * SCALE_FACTOR) + center_x
+        mini_star_y = round((star[1] - player.y) * SCALE_FACTOR) + center_y
         if 0 <= mini_star_x < MINI_MAP_WIDTH and 0 <= mini_star_y < MINI_MAP_HEIGHT:
             mini_map_surface.set_at((mini_star_x, mini_star_y), WHITE)
     
     for planet in planets:
-        mini_planet_x = round((planet.x - player.x) * MINI_MAP_SCALE) + center_x
-        mini_planet_y = round((planet.y - player.y) * MINI_MAP_SCALE) + center_y
-        mini_radius = max(1, round(planet.radius * MINI_MAP_SCALE))
-        pygame.draw.circle(mini_map_surface, planet.color, (mini_planet_x, mini_planet_y), mini_radius)
-    
-    pygame.draw.circle(mini_map_surface, (255, 0, 0), (center_x, center_y), 4)
+        mini_planet_x = round((planet.x - player.x) * SCALE_FACTOR) + center_x
+        mini_planet_y = round((planet.y - player.y) * SCALE_FACTOR) + center_y
+
+        # Downscale planet sprite
+        scaled_width = max(2, planet.sprite.get_width() * planet.scale // DOWNSCALE_FACTOR)
+        scaled_height = max(2, planet.sprite.get_height() * planet.scale // DOWNSCALE_FACTOR)
+        mini_sprite = pygame.transform.scale(planet.sprite, (scaled_width, scaled_height))
+
+        # Get sprite rect and adjust position
+        sprite_rect = mini_sprite.get_rect(center=(mini_planet_x, mini_planet_y))
+        mini_map_surface.blit(mini_sprite, sprite_rect)
+
+    # Draw player marker in red
+    pygame.draw.circle(mini_map_surface, (255, 0, 0), (center_x, center_y), 2)
+
+    # Draw minimap border
     pygame.draw.rect(mini_map_surface, WHITE, mini_map_surface.get_rect(), 1)
+
+    # Blit minimap to main UI
     surface.blit(mini_map_surface, (WIDTH - MINI_MAP_WIDTH - 10, 10))
 
 def draw_button(surface, rect, text, font, text_color=WHITE, button_color=GRAY):

@@ -20,6 +20,7 @@ def run_game(screen, planets, spaceship_data, save_folder=None):
     # Use the provided save_folder if given; otherwise, use get_save_filename.
     # Since get_save_filename returns an OS path, use it directly.
     initial_save_folder = save_folder if save_folder else get_save_filename()
+    save_filename = initial_save_folder
     
     save_progress = 0.0
     save_in_progress = True

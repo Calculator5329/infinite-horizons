@@ -27,7 +27,7 @@ def list_save_files():
     save_dir = "saves"
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    return [os.path.join(save_dir, f) for f in os.listdir(save_dir) if f.endswith(".json")]
+    return [os.path.join(save_dir, f) for f in os.listdir(save_dir)]
 
 def get_save_filename(custom_name=None):
     save_dir = "saves"
