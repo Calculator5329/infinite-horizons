@@ -83,29 +83,6 @@ class Spaceship:
             camera_y = self.y - (HEIGHT - MARGIN)
         
         return camera_x, camera_y
-
-    # In your Spaceship class (spaceship.py)
-    def update_landed(self, keys, planet):
-        speed = 2  # Adjust as needed for on-planet speed
-        if keys[pygame.K_LEFT]:
-            self.x -= speed
-        if keys[pygame.K_RIGHT]:
-            self.x += speed
-        if keys[pygame.K_UP]:
-            self.y -= speed
-        if keys[pygame.K_DOWN]:
-            self.y += speed
-
-        # Keep the spaceship within the bounds of the *scaled* planet
-        #This is a basic bounding, you can improve on this.
-        scaled_radius = planet.res * 5 / 2
-        min_x = planet.x * 5 - scaled_radius
-        max_x = planet.x * 5 + scaled_radius - self.width
-        min_y = planet.y * 5- scaled_radius
-        max_y = planet.y * 5 + scaled_radius - self.height
-
-        self.x = max(min_x, min(self.x, max_x))
-        self.y = max(min_y, min(self.y, max_y))
         
     def draw(self, screen, camera_x, camera_y):
         """
@@ -119,3 +96,84 @@ class Spaceship:
         rotated_image = pygame.transform.rotate(self.sprite, self.angle)
         rotated_rect = rotated_image.get_rect(center=screen_pos)
         screen.blit(rotated_image, rotated_rect.topleft)
+
+
+    def update_with_boundaries(self, keys, camera_x, camera_y, boundaries=[]):
+        x1, x2, y1, y2 = boundaries
+        prev_x, prev_y = self.x, self.y
+        prev_camera_x, prev_camera_y = camera_x, camera_y
+        realx, realy = (self.x + camera_x), (self.y + camera_y)
+        
+        # Real means selfx + camerax and selfy + cameray
+        # -1925 both to 3840 2945
+
+        # Boosting logic
+        if keys[pygame.K_SPACE]:
+            self.boost_multiplier = self.boost_speed
+            self.boosting = True
+            self.sprite = self.get_scaled_sprite(Spaceship._sprite_boost)
+        else:
+            self.boost_multiplier = 1
+            self.boosting = False
+            self.sprite = self.get_scaled_sprite(Spaceship._original_sprite)
+
+        dx = keys[pygame.K_d] - keys[pygame.K_a]
+        dy = keys[pygame.K_s] - keys[pygame.K_w]
+        if (dx, dy) != (0, 0):
+            self.angle = -math.degrees(math.atan2(dy, dx)) - 90
+            self.x += dx * self.speed * self.boost_multiplier
+            self.y += dy * self.speed * self.boost_multiplier
+
+        # Check boundaries using world coordinates
+        collisions = self.set_boundaries(x1, y1, x2, y2, camera_x, camera_y)
+        # If a collision is detected, revert the spaceship's movement on that axis
+        if collisions[0] or collisions[1]:
+            self.x = prev_x
+            camera_x = prev_camera_x  # revert camera movement horizontally
+        if collisions[2] or collisions[3]:
+            self.y = prev_y
+            camera_y = prev_camera_y  # revert camera movement vertically
+
+        # Adjust the camera based on spaceship position if no collision occurred.
+        # Compute screen positions relative to camera offsets.
+        screen_x = self.x - camera_x
+        screen_y = self.y - camera_y
+
+        if screen_x < MARGIN:
+            camera_x = self.x - MARGIN
+        elif screen_x > WIDTH - MARGIN:
+            camera_x = self.x - (WIDTH - MARGIN)
+        if screen_y < MARGIN:
+            camera_y = self.y - MARGIN
+        elif screen_y > HEIGHT - MARGIN:
+            camera_y = self.y - (HEIGHT - MARGIN)
+
+        return camera_x, camera_y
+    
+    
+    def set_boundaries(self, x1, y1, x2, y2, camera_x, camera_y):
+        
+        world_x = self.x + camera_x
+        world_y = self.y + camera_y
+        
+        # Left, Right, Top, Bottom
+        collisions = [0, 0, 0, 0]
+        
+        # Left boundary
+        if world_x < x1:
+            collisions[0] = 1
+        
+        # Right boundary
+        if world_x > x2:
+            collisions[1] = 1
+        
+        # Top boundary
+        if world_y < y1:
+            collisions[2] = 1
+        
+        # Bottom boundary
+        if world_y > y2:
+            collisions[3] = 1
+        
+        return collisions
+        

@@ -45,7 +45,6 @@ class Planet:
         self.habitability = random.uniform(0, 1)  # 0 (inhospitable) to 1 (earth-like)
         self.name = self.generate_name()
         self.scale = random.uniform(1.0, 5.0)
-        self.landing_scale = 5.0
         self.color = WHITE
         
         self.cached_scaled_sprite = None
@@ -67,7 +66,7 @@ class Planet:
         suffixes = ['I', 'II', 'III', 'IV', 'V', 'Prime', 'Major']
         return f"{random.choice(prefixes)}-{random.choice(suffixes)}"
 
-    def draw(self, surface, camera_x, camera_y, landing=False):
+    def draw(self, surface, camera_x, camera_y):
         """
         Draw the planet on the given surface.
         
@@ -82,12 +81,37 @@ class Planet:
             self.cached_scaled_sprite = pygame.transform.scale(self.sprite, (scaled_width, scaled_height))
             self.cached_scale = self.scale
             
-        scaled_sprite = get_cached_sprite(self.sprite, self.scale * self.landing_scale if landing else self.scale)
+        scaled_sprite = get_cached_sprite(self.sprite, self.scale)
+        sprite_rect = scaled_sprite.get_rect(center=(int(camera_x), int(camera_y)))
         sprite_rect = scaled_sprite.get_rect(center=(int(self.x - camera_x), int(self.y - camera_y)))
         surface.blit(scaled_sprite, sprite_rect)
         font = PLANET_FONT
-        name_surf = font.render(self.name, True, (255, 255, 255))
-        surface.blit(name_surf, (sprite_rect.x, sprite_rect.y - 20))
+        name_surf = font.render(self.name, True, (255, 255, 255))            
+        surface.blit(name_surf, (sprite_rect.x, sprite_rect.y))
+        
+    def draw_visit(self, surface, camera_x, camera_y, x=960, y=510):
+        """
+        Draw the planet on the given surface.
+        
+        :param surface: Pygame surface to draw on.
+        :param camera_x: Camera X offset.
+        :param camera_y: Camera Y offset.
+        """
+        # Update cached main sprite if scale changed
+        landing_scale = 128 * 20/self.res
+        if self.cached_scaled_sprite is None or self.cached_scale != landing_scale:
+            scaled_width = int(self.sprite.get_width() * landing_scale)
+            scaled_height = int(self.sprite.get_height() * landing_scale)
+            self.cached_scaled_sprite = pygame.transform.scale(self.sprite, (scaled_width, scaled_height))
+            self.cached_scale = landing_scale
+            
+        scaled_sprite = get_cached_sprite(self.sprite, landing_scale)
+        sprite_rect = scaled_sprite.get_rect(center=(int(camera_x), int(camera_y)))
+        sprite_rect = scaled_sprite.get_rect(center=(int(x - camera_x), int(y - camera_y)))
+        surface.blit(scaled_sprite, sprite_rect)
+        font = PLANET_FONT
+        name_surf = font.render(self.name, True, (255, 255, 255))            
+        surface.blit(name_surf, (sprite_rect.x, sprite_rect.y))
 
     @classmethod
     def from_save_data(cls, data):
