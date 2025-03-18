@@ -1,0 +1,345 @@
+### OVERALL PLAN ###
+
+Master Project Plan: 2D Sci-Fi Game with LLM-Generated Missions, Dynamic NPCs, Faction Wars, and a Living Economy
+
+1. Overview
+This is an open-ended, procedurally generated space RPG where the player:
+Travels between planets, engaging in combat, diplomacy, and trade.
+Undertakes LLM-generated missions that dynamically adapt to the game world.
+Forges alliances, builds their own faction, and influences galactic politics.
+Trades, smuggles, and manipulates the economy while gathering intelligence.
+Designs and shapes planetary governments, pushing for policy changes.
+Manages a fleet of ships and a crew, growing their influence.
+Interacts with highly dynamic NPCs who evolve based on political, economic, and personal factors.
+
+2. Core Gameplay Systems
+A. Mission System
+LLM dynamically generates missions by combining:
+Structured objectives (predefined minigames and mechanics)
+Procedural world-building (context, consequences, lore)
+Branching choices (combat, diplomacy, stealth, trade)
+Randomized or context-aware rewards
+First Mission Example:
+Smuggle oppressed citizens out of a faction-controlled system.
+Engage in real-time ship combat to escape.
+Deliver refugees to a free system for a reward.
+
+B. NPC System & AI-Powered Interactions
+1. Deeply Dynamic NPCs
+NPCs evolve over time, shifting political allegiances, wealth, and roles.
+Example: A former pirate becomes a politician, or a loyal friend betrays the player.
+LLM generates backstories to explain changes.
+2. NPC Data Storage (Each NPC Has a Folder)
+FAISS Vector Database: Memory retrieval system.
+Short Hardcoded Stats:
+Mood, current situation, future plans, money, investments, political alignment, personality, history.
+Deep NPC Backstory:
+A large text file storing an extensive NPC history.
+Allows LLM-driven long-term continuity in conversations.
+Dynamic NPC Interactions:
+NPCs may occasionally provide intel about faction wars, trade, politics.
+Some NPCs can betray you based on past actions.
+
+C. Factions & Political System
+Faction Territories:
+Galactic map shaded by faction ownership.
+Dynamic faction expansion/contraction.
+Governments & Political Influence:
+Most planets have predefined government types.
+Player can push for changes (diplomacy, funding political movements, sabotage).
+LLM analyzes political structures and assigns stability metrics.
+Faction Wars & Power Balancing:
+If a war erupts, the player can lead the rebellion.
+If too powerful, opposing factions unite to overthrow the player.
+Real-time faction economy, military strength, and political shifts.
+Political Subtypes:
+Fascist → Leads to Militant state.
+Conservative → Stable, but slow growth.
+Stable → Always short-lived.
+Progressive → High scientific progress, but low military.
+Communist → Becomes Militant over time.
+Rebel/Anarchist → Free but chaotic.
+
+D. Economy & Trade System
+Dynamic Market on Every Planet
+Prices fluctuate based on wars, shortages, economic crashes.
+Smuggling & Black Markets
+Players can smuggle illegal goods, risking detection.
+Inspections, bribery, and faction-policed space travel.
+Stock Market System
+Company stocks fluctuate based on trade, political events, faction wars.
+Players can gather insider knowledge by talking to employees.
+Ship & Tech Upgrades
+Better ships are expensive and require investment.
+Rare AI Cores (Nvidia chips, RAM, CPUs) used for ship AI enhancements.
+Cloaking devices, hacking tools, rocket boosters for ship customization.
+
+E. Combat System
+1. Real-Time Combat (Space & Ground)
+Ship Combat:
+Inspired by Space Invaders, but with free movement in any direction.
+Upgradeable weapons, shields, and AI-driven ship combat.
+Ground Combat:
+Blasters, drones, remote-controlled robots, destructible environments.
+Combat AI for factions, allowing large-scale planetary skirmishes.
+2. Turn-Based Combat (Later Implementation)
+Strategic battle system for special missions.
+Tactical positioning, squad-based engagements.
+
+F. Galactic News System
+Real-time news feed reflecting game events:
+Wars, trade fluctuations, NPC promotions/demotions, betrayals.
+Player can influence the news cycle via propaganda, bribery, or leaks.
+
+G. Exploration & Worldbuilding
+Galaxy Map
+Faction territories evolve dynamically.
+Procedurally Generated Planets
+LLM generates history, government structure, and unique issues.
+Scrapyard Raiding
+Loot valuable upgrades using a tech minigame.
+Hidden Knowledge System
+LLM generates secrets, connections, stock tips, rare artifacts.
+
+3. Technical Architecture
+A. Backend & Database
+SQLite (structured game data: factions, economy, missions).
+FAISS Vector Database (NPC memory, player choices).
+Procedural Event System (dynamic wars, economies, and politics).
+B. LLM Integration
+Mission Generation: Structured prompts mixing hardcoded mechanics.
+NPCs & Conversations:
+Uses RAG (Retrieval-Augmented Generation) for continuity.
+Political System:
+LLM analyzes player-created governments and assigns stability metrics.
+
+4. Development Roadmap
+🔹 Phase 1: Core Systems
+Basic movement & interaction
+Mission framework
+Faction reputation tracking
+Basic LLM integration (dialogue, mission context)
+🔹 Phase 3: Combat Systems
+Real-time space combat (free movement)
+Ground combat mechanics
+Faction battle AI
+🔹 Phase 2: Economy & Trade
+Markets on planets
+Smuggling mechanics
+AI-generated stock tips & economic fluctuations
+🔹 Phase 4: NPC Memory & AI Expansion
+NPCs with recallable memories
+Dynamic relationships with players
+Intel & long-term alliances system
+🔹 Phase 6: Worldbuilding & Political Expansion
+Faction wars evolve dynamically
+Government-building mechanics
+LLM inference for political stability
+🔹 Phase 5: Player-Owned Factions & Fleet Management
+Forming & managing a faction
+Recruiting members
+Buying additional ships and assigning crew
+🔹 Final Phase: Polishing & Advanced AI
+LLM-based hidden knowledge system
+Procedural planetary histories
+Adaptive mission difficulty based on game state
+
+5. Final Thoughts
+This game will combine deep player agency, dynamic NPC interactions, and emergent storytelling, driven by:
+A reactive, evolving faction system.
+A deep economy with trade, smuggling, and stock market fluctuations.
+LLM-generated missions that mix structured gameplay mechanics.
+NPCs that remember, change, and act on their own agendas.
+🚀 Next Steps:
+Develop Phase 1 (movement, faction tracking, mission framework).
+Prototype first mission (smuggling oppressed citizens).
+Implement LLM-based mission assembly.
+Test dynamic NPC system with stored memory.
+
+
+### COMMUNICATIONS SATELITE PLANS ### 
+
+High-Level Plan for the comm_menu System
+The Communication Menu (comm_menu) will serve as a central hub for interacting with planets, NPCs, missions, and galactic news. It will be accessed whenever the player interacts with a Comm Ship or planetary communication hub.
+
+🔹 Core Features of comm_menu
+1️⃣ Interaction Categories
+When the player opens the Comm Menu, they will see a UI with the following options:
+
+📡 Communications – Talk to NPCs, government officials, traders, or faction leaders.
+🛠️ Missions – View and accept missions.
+📖 Planetary Library – Learn about the planet’s history, politics, and market conditions.
+📰 Galactic News – Read current events related to faction wars, economics, and politics.
+🚀 Travel & Docking – Request landing clearance, trade routes, or fleet movements (later).
+❌ Exit – Close the menu and return to gameplay.
+🔹 How Each Section Works
+1️⃣ Communications (NPC Interactions)
+Displays NPCs available to talk based on faction reputation and story events.
+Uses RAG-based LLM responses to keep NPC dialogue consistent.
+NPCs will provide:
+Faction Intel (Who’s at war? What’s changing?)
+Trade Secrets (Market prices, smuggling routes)
+Mission Leads (Hints about quests, hidden characters)
+Gossip & Rumors (Minor details that might be useful)
+Example UI:
+
+vbnet
+Copy
+Edit
+🔹 NPC Communications 🔹
+1. Talk to Governor Myra Ren (Faction Leader)
+2. Speak with Captain Dren (Mercenary)
+3. Chat with Trader Kilo Vex (Marketplace)
+4. Return to Menu
+2️⃣ Missions (Quest Log & Accepting New Missions)
+Displays active missions and available new missions.
+Missions will be LLM-generated using predefined structures mixed with procedural elements.
+The player can:
+Accept new missions (e.g., smuggling, combat, diplomatic).
+Track mission objectives and rewards.
+Abandon or re-negotiate missions.
+Example UI:
+
+vbnet
+Copy
+Edit
+🔹 Missions 🔹
+1. Smuggle refugees to Free Haven (✔ Accepted)
+2. Deliver AI cores to a Syndicate Outpost (New)
+3. Sabotage enemy communication systems (New)
+4. Return to Menu
+3️⃣ Planetary Library (Research & Knowledge)
+Provides historical and political background about the planet.
+Displays current economic and faction standings.
+If the player hacks or bribes officials, they can unlock secret knowledge.
+Example UI:
+
+markdown
+Copy
+Edit
+🔹 Planetary Library 🔹
+1. Government Type: Corporate Oligarchy
+2. Economy: Thriving, Major Exports: AI Chips
+3. Faction Control: The Zenith Conglomerate
+4. Trade Laws: Smuggling detected with 40% risk
+5. Return to Menu
+4️⃣ Galactic News System
+A real-time news feed with:
+Faction wars & treaties
+Economic crashes & stock fluctuations
+Political scandals & regime changes
+News items change dynamically based on player actions.
+The player can leak information, bribe reporters, or manipulate stories.
+Example UI:
+
+csharp
+Copy
+Edit
+🔹 Galactic News Feed 🔹
+[BREAKING] The Syndicate forces retreat from Zeta Prime after heavy losses!
+[MARKET] AI Core Prices Surge as Supply Dwindles 🚀
+[POLITICS] Governor Myra Ren Under Investigation for Corruption!
+5️⃣ Travel & Docking (Later Feature)
+Request landing clearance on space stations.
+Arrange fleet movements (if the player owns multiple ships).
+Request ship repairs & upgrades (if in a repair bay).
+This will be expanded later when fleet management is implemented.
+🔹 Future Expansion Possibilities
+Propaganda System: Bribe news outlets to alter public opinion.
+Black Market Expansion: Request forged identities or illegal weapon deals.
+Faction Negotiation: Influence wars and alliances through diplomatic talks.
+🔹 Next Steps
+Implement a basic Comm Menu UI.
+Add NPC interactions with predefined dialogue (LLM integration comes later).
+Implement mission viewing/acceptance.
+Integrate news system & planetary data.
+Expand with economy & political influence features.
+
+
+
+### Classes ###
+Class Layout for 2D Sci-Fi Game
+This outlines the major classes, their attributes, and relationships in the game.
+
+1. Core Game Classes
+Player
+Represents the user.
+Tracks stats, reputation, and assets.
+Attributes:
+name (str) – The player’s name.
+credits (int) – Currency balance.
+ship (Spaceship) – The player’s current ship. # implement later
+reputation (dict) – Faction standings.
+crew (list[NPC]) – NPCs recruited by the player.
+achievements (list) – List of in-game accomplishments.
+relationships (dict[NPC, RelationshipObject]) – Player’s relationships with NPCs.
+Spaceship
+The player's personal ship, customizable with upgrades.
+Attributes:
+name (str) – Name of the ship.
+ship_class (str) – Type of ship (e.g., fighter, cargo, stealth).
+hp (int) – Ship health points.
+fuel (int) – Available fuel.
+weapons (list) – Equipped weapons.
+shields (list) – Defensive upgrades.
+ai_core (str or None) – AI module installed for ship enhancements.
+Planet
+Represents a planetary body with economic and political significance.
+Attributes:
+name (str) – Name of the planet.
+government_type (str) – Type of government (e.g., democracy, dictatorship).
+faction (Faction) – The controlling faction.
+population (int) – Number of inhabitants.
+economy (dict) – Includes stocks, trade goods, and market fluctuations.
+ships_in_orbit (list[TradeShip | CommunicationShip]) – Ships currently orbiting.
+2. Ships & Fleet Management
+TradeShip
+Handles trade between planets, impacting local economies.
+Attributes:
+owner (str) – Owner of the trade ship.
+cargo (dict) – Goods being transported.
+origin (Planet) – Starting location.
+destination (Planet) – Target planet.
+status (str) – Current state (e.g., traveling, docked, under attack).
+CommunicationShip
+Facilitates espionage and negotiations between factions.
+Attributes:
+faction_owner (str) – The faction controlling the ship.
+location (Planet) – Current position.
+encryption_level (int) – Security level (higher makes it harder to intercept).
+3. NPCs & Relationships
+NPC
+Represents an individual character in the world.
+Attributes:
+name (str) – Name of the NPC.
+faction (Faction) – The faction they belong to.
+political_alignment (str) – Ideological stance.
+relationships (dict[Player, RelationshipObject]) – Connection with the player.
+memory (dict) – FAISS-based memory retrieval.
+RelationshipObject
+Tracks the player’s connection with an NPC.
+Attributes:
+npc (NPC) – The NPC involved.
+trust (int) – Trust level (-100 to 100).
+betrayal_risk (int) – Probability of betrayal (0 to 100).
+4. Factions & Politics
+Faction
+Represents a political entity controlling planets and ships.
+Attributes:
+name (str) – Name of the faction.
+government_type (str) – Type of ruling system.
+controlled_planets (list[Planet]) – List of planets under control.
+economy_strength (int) – Overall economic power.
+military_strength (int) – Fleet and army capabilities.
+5. Economy & Trade
+StockMarket
+Simulates stock price fluctuations for companies.
+Attributes:
+companies (dict[str, float]) – Maps company names to their stock prices.
+Class Relationships
+Player → Spaceship: The player owns a spaceship.
+Player → NPC: NPCs interact with the player, relationships tracked via RelationshipObject.
+Planet → Ships: Planets host TradeShip and CommunicationShip objects.
+Faction → Planet: Each planet belongs to a faction.
+Faction → NPC: NPCs have allegiance to factions.
+StockMarket → Faction Economy: Faction economy is influenced by stock values.

@@ -2,12 +2,16 @@ import pygame
 import threading
 from classes.spaceship import Spaceship
 from classes.planet import Planet
+from classes.comm_ship import comm_ship
 from ui import draw_mini_map, draw_progress_bar
 from utils import WIDTH, HEIGHT, get_save_filename, FPS
 from save_funcs import save_game
 from world import CHUNK_SIZE, get_visible_chunks, get_chunk_surface
 from landing import is_ship_on_planet  # Import the is_ship_on_planet function
+import random
+from classes.player import Player
 
+player = Player("Player 1")
 
 def run_game(screen, planets, spaceship_data, save_folder=None):
     """
@@ -53,23 +57,32 @@ def run_game(screen, planets, spaceship_data, save_folder=None):
     # --- Game Mode Control ---
     camera_x, camera_y = 0, 0
     running = True
-    landed_planet = None  # Track which planet is landed on (None if in space)
+    landed_planet = planets[0]  # Track which planet is landed on (None if in space)
+
+    game_type = "space"  # Can be "space" or "planet"
 
     while running:
-        if landed_planet:
-            # In orbit
-            running = planet_game(screen, planet=landed_planet, camera_x=0, camera_y=0)  
+        if game_type == "planet":
+            # On planet surface
+            continue_game = planet_game(screen, planet=landed_planet, camera_x=0, camera_y=0)
             
-            if running: # Player took off
-                landed_planet = None # Reset
-                 # Reset camera to follow spaceship, after taking off
+            if not continue_game:
+                running = False
+            else:
+                # Player took off
+                game_type = "space"
+                # Reset camera to follow spaceship, after taking off
                 camera_x = player.x - WIDTH // 2
                 camera_y = player.y - HEIGHT // 2
 
-        else:
-            running, landed_planet = space_game(screen, planets, player, camera_x, camera_y) # Receive the landed planet
-            # Update camera position only if not landed (in space)
-            if not landed_planet:
+        else:  # game_type == "space"
+            running, landed_planet = space_game(screen, planets, player, camera_x, camera_y)
+            
+            if landed_planet:
+                # Player landed on a planet
+                game_type = "planet"
+            else:
+                # Update camera position only if in space
                 camera_x, camera_y = player.update(pygame.key.get_pressed(), camera_x, camera_y)
 
 
@@ -154,22 +167,10 @@ def planet_game(screen, planet, camera_x, camera_y):
     clock = pygame.time.Clock()
     running = True
     spaceship = Spaceship(WIDTH / 2, HEIGHT / 2)
+    communications = comm_ship(random.randint(0, 2000), random.randint(0, 1000))
+    loc = "planet"
     
-
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return False  # Signal to quit the entire game
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_q:  # Take off
-                    return True   # Signal to return to space mode
-
-        keys = pygame.key.get_pressed()
-    
-        screen.fill((0, 0, 0))
-        
-        boundary_size_x, boundary_size_y = 1920, 1920
-        
+    def draw_border(boundary_size_x, boundary_size_y, camera_x, camera_y):
         # Draw the border relative to the camera view grey
         border_rect = pygame.Rect(
             -boundary_size_x -5 - 2*camera_x -1,   # left in screen space
@@ -186,12 +187,39 @@ def planet_game(screen, planet, camera_x, camera_y):
             2* boundary_size_y + HEIGHT + 5 + 8                # height
         )
         pygame.draw.rect(screen, (255, 255, 255), border_rect, 3)
+    
 
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False  # Signal to quit the entire game
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:  # Take off
+                    return True   # Signal to return to space mode
+                if event.key == pygame.K_e and communications.check_border(spaceship.x, spaceship.y):
+                    loc = "comm"
+                    
+        if loc == "comm":
+            loc = communications.comm_menu(screen, player)
         
-        planet.draw_visit(screen, camera_x, camera_y, WIDTH / 2, HEIGHT / 2)        
+        keys = pygame.key.get_pressed()
+        boundary_size_x, boundary_size_y = 1920, 1920
+    
+        screen.fill((0, 0, 0))
+        
+        draw_border(boundary_size_x, boundary_size_y, camera_x, camera_y) # Borders
+        planet.draw_visit(screen, camera_x, camera_y, WIDTH / 2, HEIGHT / 2) # Planet 
+        
+        communications.draw(screen, camera_x, camera_y)
+        if communications.check_border(spaceship.x, spaceship.y):
+            font = pygame.font.Font(None, 36)
+            text_surface = font.render("Press E to interact", True, (255, 255, 255))
+            text_rect = text_surface.get_rect(center=(spaceship.x - camera_x, spaceship.y - camera_y - 50))
+            screen.blit(text_surface, text_rect)
+             
         
         camera_x, camera_y = spaceship.update_with_boundaries(keys, camera_x, camera_y, [-boundary_size_x, boundary_size_x + WIDTH, -boundary_size_y, boundary_size_y + HEIGHT])
-        spaceship.draw(screen, camera_x, camera_y)      
+        spaceship.draw(screen, camera_x, camera_y) # Spaceship       
         
 
         pygame.display.flip()
