@@ -16,7 +16,7 @@ class comm_ship:
     _original_sprite = None  # Class variable to store the default sprite.
     _sprite_boost = None     # Class variable to store the boost sprite.
 
-    def __init__(self, x, y, scale_factor=0.5):
+    def __init__(self, loc, data, scale_factor=0.5):
         """
         Initialize the ship.
         
@@ -27,14 +27,17 @@ class comm_ship:
         if comm_ship._original_sprite is None:
             comm_ship._original_sprite = pygame.image.load("communications_ship.png").convert_alpha()
 
-        self.x = x
-        self.y = y
+        self.x = loc[0]
+        self.y = loc[1]
         self.width = 480
         self.height = 280
         self.angle =  0
-        self.border_radius = 256
+        self.border_radius = 200
         self.scale_factor = scale_factor
         self.sprite = self.get_scaled_sprite(comm_ship._original_sprite)
+        self.planet = data[0]
+        self.missions = self.planet.missions
+        self.planets = data[1]
 
     def get_scaled_sprite(self, base_sprite):
         """Return a scaled version of the provided sprite."""
@@ -68,7 +71,7 @@ class comm_ship:
         distance = math.sqrt((player_x - self.x) ** 2 + (player_y - self.y) ** 2)
         return distance <= self.border_radius
     
-    def comm_menu(self, screen, player):
+    def comm_menu(self, screen, player, update_player_missions):
         # Load background image (comm_room.jpg)
         background = pygame.image.load("comm_room.jpg").convert()
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
@@ -87,12 +90,16 @@ class comm_ship:
         # Define green color (bright terminal green)
         terminal_green = (0, 255, 0)
         
+        mission_data = [self.planet, "comm"]
         
         comms_button = pygame.Rect(455, 515, 135, 120)   # Communications
         missions_button = pygame.Rect(875, 540, 185, 132)  # Missions
         exit_button = pygame.Rect(1600, 395, 64, 100)      # Exit
 
         while running_menu:
+            # Get current time for notifications
+            current_time = pygame.time.get_ticks()
+            
             screen.blit(background, (0, 0))
             
             # Draw semi-transparent overlay (optional, for button contrast)
@@ -108,6 +115,8 @@ class comm_ship:
             screen.blit(comms_text, update_rect)
             screen.blit(missions_text, missions_text.get_rect(center=missions_button.center))
             screen.blit(exit_text, exit_text.get_rect(center=exit_button.center))
+            
+            update_player_missions(mission_data[0], mission_data[1])
             
             pygame.display.flip()
             
@@ -169,22 +178,34 @@ class comm_ship:
         font = pygame.font.Font(None, 32)
         small_font = pygame.font.Font(None, 28)
         
-        # Initialize an example mission list
-        init_mission = Mission(
-            title="Smuggle Refugees",
-            description="Transport refugees to safety on the planet Alpha I.",
-            reward=1000,
-            steps=[
-                MissionStep(
-                    description="Deliver refugees to safety.",
-                    task=TaskDeliverPassenger("Gamma III", "Alpha I", "Refugees", "hub")
-                )
-            ]
-        )    
+        planet_names = [p.name for p in self.planets]
         
-        missions = [
-            init_mission
-        ]
+        # Only add an example mission if there are no missions yet
+        if not self.missions:
+            # Find a random destination planet that's not the current planet
+            potential_destinations = [p for p in planet_names if p != self.planet.name]
+            if potential_destinations:
+                destination_name = random.choice(potential_destinations)
+            else:
+                # Fallback if no other planets are available
+                destination_name = "Distant Colony"
+                
+            # Testing
+            destination_name = self.planet.name
+                
+            self.missions.append(Mission(
+                title="Smuggle Refugees",
+                description=f"Transport refugees to safety on the planet {destination_name}.",
+                reward=1000,
+                steps=[
+                MissionStep(
+                    description=f"Deliver refugees to safety.",
+                    task=TaskDeliverPassenger(self.planet.name, destination_name, "Refugees", "hub")
+                )]
+                )
+            )
+        
+        missions = self.missions
         
         # Initialize show_details list to track which missions have expanded details
         show_details = []

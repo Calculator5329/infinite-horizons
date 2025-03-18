@@ -9,14 +9,14 @@ class AchievementPopup:
     def __init__(self):
         self.active_popups = []
         self.font_size = 24
-        self.display_time = 3000  # milliseconds
-        self.fade_time = 500  # milliseconds for fade in/out
+        self.display_time = 12000  # milliseconds
+        self.fade_time = 2000  # milliseconds for fade in/out
         
-        # Default styling
-        self.bg_color = (40, 40, 40, 200)  # Dark gray with transparency
-        self.title_color = (255, 215, 0)   # Gold color for titles
-        self.text_color = (255, 255, 255)  # White for message text
-        self.border_color = (80, 80, 80)   # Light gray border
+        # Default styling - make sure all colors have correct format (RGB or RGBA)
+        self.bg_color = (40, 40, 40, 200)  # Dark gray with transparency (RGBA)
+        self.title_color = (255, 215, 0)   # Gold color for titles (RGB)
+        self.text_color = (255, 255, 255)  # White for message text (RGB)
+        self.border_color = (80, 80, 80)   # Light gray border (RGB)
         self.popup_width = 300
         self.popup_height = 80
         self.border_width = 2
@@ -136,28 +136,35 @@ class AchievementPopup:
             popup_surface = pygame.Surface((self.popup_width, self.popup_height), pygame.SRCALPHA)
             
             # Background with adjusted alpha
+            # Make sure we handle RGBA properly
             bg_color = list(self.bg_color)
-            bg_color[3] = int(self.bg_color[3] * alpha / 255)
+            if len(bg_color) == 4:  # RGBA
+                bg_color[3] = int(self.bg_color[3] * alpha / 255)
+            else:  # RGB - convert to RGBA
+                bg_color = list(bg_color) + [alpha]
+                
             pygame.draw.rect(popup_surface, tuple(bg_color), 
                             (0, 0, self.popup_width, self.popup_height), 
                             border_radius=8)
             
             # Border with adjusted alpha
-            border_color = list(self.border_color)
-            border_color[3] = int(self.border_color[3] * alpha / 255)
+            # Convert border color to RGBA if it's not already
+            if len(self.border_color) == 3:  # RGB
+                border_color = list(self.border_color) + [alpha]
+            else:  # RGBA
+                border_color = list(self.border_color)
+                border_color[3] = int(self.border_color[3] * alpha / 255)
+                
             pygame.draw.rect(popup_surface, tuple(border_color), 
                             (0, 0, self.popup_width, self.popup_height), 
                             width=self.border_width, border_radius=8)
             
-            # Render title with adjusted alpha
-            title_color = list(self.title_color)
-            title_color[3] = int(alpha)
-            title_text = self.title_font.render(popup["title"], True, tuple(title_color))
+            # Render title and message texts
+            title_text = self.title_font.render(popup["title"], True, self.title_color)
+            title_text.set_alpha(alpha)
             
-            # Render message with adjusted alpha
-            text_color = list(self.text_color)
-            text_color[3] = int(alpha)
-            message_text = self.message_font.render(popup["message"], True, tuple(text_color))
+            message_text = self.message_font.render(popup["message"], True, self.text_color)
+            message_text.set_alpha(alpha)
             
             # Position for text (and icon if present)
             icon_width = 0

@@ -1,5 +1,4 @@
 import pygame
-from classes.spaceship import Spaceship
 
 """
 Module: player

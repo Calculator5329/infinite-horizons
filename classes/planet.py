@@ -36,7 +36,7 @@ class Planet:
         self.x = x
         self.y = y
         self.id = planet_id
-        self.res = random.choice([128, 256])
+        self.res = 256
         self.type = random.choice(['Terrestrial', 'Gas Giant', 'Ice Giant', 'Dwarf'])
         self.minerals = random.sample(
             ['Iron', 'Gold', 'Silver', 'Copper', 'Uranium', 'Platinum'],
@@ -44,7 +44,7 @@ class Planet:
         )
         self.habitability = random.uniform(0, 1)  # 0 (inhospitable) to 1 (earth-like)
         self.name = self.generate_name()
-        self.scale = random.uniform(1.0, 5.0)
+        self.scale = random.uniform(0.5, 6.0)
         self.color = WHITE
         
         self.cached_scaled_sprite = None
@@ -59,6 +59,7 @@ class Planet:
         )
         self.sprite = pil_to_pygame(self.pil_sprite)
         self.theme_name = theme["name"]
+        self.missions = []
 
     def generate_name(self):
         """Generate a random planet name."""
@@ -98,7 +99,7 @@ class Planet:
         :param camera_y: Camera Y offset.
         """
         # Update cached main sprite if scale changed
-        landing_scale = 128 * 20/self.res
+        landing_scale = 10
         if self.cached_scaled_sprite is None or self.cached_scale != landing_scale:
             scaled_width = int(self.sprite.get_width() * landing_scale)
             scaled_height = int(self.sprite.get_height() * landing_scale)
@@ -118,26 +119,59 @@ class Planet:
         """
         Create a Planet instance from saved data.
         
-        :param data: Dictionary containing saved planet attributes.
-        :return: Planet instance.
+        :param data: Dictionary containing planet data.
+        :return: A new Planet instance.
         """
-        self = cls.__new__(cls)
-        self.x = data["x"]
-        self.y = data["y"]
-        self.color = tuple(data["color"])
-        self.type = data["type"]
-        self.minerals = data["minerals"]
-        self.habitability = data["habitability"]
-        self.name = data["name"]
-        self.theme_name = data["theme_name"]
-        self.scale = data["scale"]
-        self.res = data["res"]
-        self.landing_scale = 5.0
-        self.sprite = pygame.image.load(data["sprite_filename"]).convert_alpha()
-        self.pil_sprite = surface_to_pil(self.sprite)
-        # Initialize cache attributes so they exist later.
-        self.cached_scaled_sprite = None
-        self.cached_scale = None
-        self.cached_mini_sprite = None
-        self.cached_mini_scale = None
-        return self
+        # Extract directory from sprite_filename to use as save_folder
+        sprite_filename = data.get("sprite_filename", "")
+        save_folder = os.path.dirname(os.path.dirname(sprite_filename))
+        if not save_folder:
+            save_folder = "saves"
+        
+        # Create a planet instance but avoid generating new sprites
+        planet = cls.__new__(cls)
+        
+        # Initialize basic attributes manually
+        planet.x = data['x']
+        planet.y = data['y']
+        planet.id = data['id']
+        planet.res = data["res"]
+        planet.type = data["type"]
+        planet.minerals = data["minerals"] 
+        planet.habitability = data["habitability"]
+        planet.name = data["name"]
+        planet.theme_name = data["theme_name"]
+        planet.scale = data["scale"]
+        planet.color = WHITE
+        planet.missions = []
+        
+        # Initialize cached sprites
+        planet.cached_scaled_sprite = None
+        planet.cached_scale = None
+        planet.cached_mini_sprite = None
+        planet.cached_mini_scale = None
+        
+        # Load the sprite from the saved file if available
+        if sprite_filename and os.path.exists(sprite_filename):
+            try:
+                planet.sprite = pygame.image.load(sprite_filename).convert_alpha()
+                # Convert to PIL image for consistency
+                planet.pil_sprite = surface_to_pil(planet.sprite)
+            except Exception as e:
+                print(f"Error loading planet sprite from {sprite_filename}: {e}")
+                # If loading fails, generate a new sprite (fallback)
+                temp = random.randint(-50, 50)
+                planet.pil_sprite, theme = generate_and_save_planet_sprite(
+                    planet.res, temp, planet_index=planet.id, save_folder=save_folder
+                )
+                planet.sprite = pil_to_pygame(planet.pil_sprite)
+        else:
+            # If sprite file doesn't exist, generate a new one
+            print(f"Missing sprite file for planet {planet.name}, generating new sprite")
+            temp = random.randint(-50, 50)
+            planet.pil_sprite, theme = generate_and_save_planet_sprite(
+                planet.res, temp, planet_index=planet.id, save_folder=save_folder
+            )
+            planet.sprite = pil_to_pygame(planet.pil_sprite)
+        
+        return planet

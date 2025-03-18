@@ -13,22 +13,63 @@ class TaskDeliver: # Deliver something to a planet or orbiting ship
     def update_pos(self, current_planet):
         self.current_planet = current_planet
 
+    def to_dict(self):
+        """Convert task to a serializable dictionary"""
+        return {
+            "type": "TaskDeliver",
+            "current_planet": self.current_planet,
+            "endpoint_planet": self.endpoint_planet,
+            "is_complete": self.is_complete
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        """Create a new task from a dictionary"""
+        task = cls(data["current_planet"], data["endpoint_planet"])
+        task.is_complete = data["is_complete"]
+        return task
+
 class TaskDeliverPassenger(TaskDeliver):
-    def __init__(self, current_planet, endpoint_planet ,passenger_name, loc):
+    def __init__(self, current_planet, endpoint_planet, passenger_name, loc):
         super().__init__(current_planet, endpoint_planet)
         self.passenger_name = passenger_name
         self.at_hub = False
 
     def update_task(self, current_planet, loc):
+        """
+        Update task status based on current location.
+        
+        :param current_planet: Name of the current planet
+        :param loc: Location type ('planet', 'hub', 'space')
+        """
         self.update_pos(current_planet)
+        
+        # Check if we're at a hub
         if loc == 'hub':
             self.at_hub = True
+            
+        # Check if we're at the correct destination and have visited a hub
         if self.at_hub and self.current_planet == self.endpoint_planet:
-            self.is_complete = True        
+            self.is_complete = True
             
+    def to_dict(self):
+        """Convert task to a serializable dictionary"""
+        data = super().to_dict()
+        data.update({
+            "type": "TaskDeliverPassenger",
+            "passenger_name": self.passenger_name,
+            "at_hub": self.at_hub
+        })
+        return data
     
-            
-    
+    @classmethod
+    def from_dict(cls, data):
+        """Create a new task from a dictionary"""
+        task = cls(data["current_planet"], data["endpoint_planet"], 
+                  data["passenger_name"], "planet")
+        task.is_complete = data["is_complete"]
+        task.at_hub = data["at_hub"]
+        return task
 
 class MissionStep:
     def __init__(self, description, task, is_complete=False):
@@ -56,14 +97,40 @@ class MissionStep:
             # Show completion notification if we have a notification system
             if notification_system and not self.notified:
                 notification_system.add_popup(
-                    "Task Complete!", 
-                    self.description,
+                    title="Task Complete!", 
+                    message=self.description,
                     icon="../icons/checkmark.png"  # Path to icon could be customized
                 )
                 self.notified = True
                 
         # Update is_complete status from task
         self.is_complete = self.task.is_complete
+
+    def to_dict(self):
+        """Convert mission step to a serializable dictionary"""
+        return {
+            "description": self.description,
+            "task": self.task.to_dict(),
+            "is_complete": self.is_complete,
+            "notified": self.notified
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        """Create a new mission step from a dictionary"""
+        task_data = data["task"]
+        task_type = task_data["type"]
+        
+        # Create the appropriate task type
+        if task_type == "TaskDeliverPassenger":
+            task = TaskDeliverPassenger.from_dict(task_data)
+        else:  # Default to TaskDeliver
+            task = TaskDeliver.from_dict(task_data)
+            
+        step = cls(data["description"], task)
+        step.is_complete = data["is_complete"]
+        step.notified = data.get("notified", False)
+        return step
 
 class Mission:
     def __init__(self, title, description, reward, steps):
@@ -106,8 +173,8 @@ class Mission:
             # Show mission completion notification
             if notification_system and not self.notified:
                 notification_system.add_popup(
-                    "Mission Complete!",
-                    f"{self.title} - Reward: {self.reward}",
+                    title="Mission Complete!",
+                    message=f"{self.title} - Reward: {self.reward}",
                     icon="../icons/mission_complete.png",  # Fixed path with extension
                     is_mission=True
                 )
@@ -150,3 +217,23 @@ class Mission:
         :return: True if the mission is completed, False otherwise.
         """
         return self.completed
+
+    def to_dict(self):
+        """Convert mission to a serializable dictionary"""
+        return {
+            "title": self.title,
+            "description": self.description,
+            "reward": self.reward,
+            "steps": [step.to_dict() for step in self.steps],
+            "completed": self.completed,
+            "notified": self.notified
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        """Create a new mission from a dictionary"""
+        steps = [MissionStep.from_dict(step_data) for step_data in data["steps"]]
+        mission = cls(data["title"], data["description"], data["reward"], steps)
+        mission.completed = data["completed"]
+        mission.notified = data.get("notified", False)
+        return mission
