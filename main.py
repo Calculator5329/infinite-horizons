@@ -85,7 +85,7 @@ def load_world(screen, clock):
         planets = loaded_result["planets"]
         spaceship_data = loaded_result["spaceship_data"]
         print(f"Loaded save from {selected_save}")
-        planets, spaceship_data, current_save_filename
+        return planets, spaceship_data, current_save_filename
     else:
         print("No save files found. Starting a new game.")
         return [], None, get_custom_save_name(screen)
@@ -108,7 +108,7 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
     pygame.display.set_caption("Infinite Horizons")
     clock = pygame.time.Clock()
-    
+     
     current_save_filename = None
     testing = False
     
