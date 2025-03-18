@@ -25,7 +25,7 @@ class hub_ship:
         :param scale_factor: Scaling factor for the hub_ship sprite.
         """
         if hub_ship._original_sprite is None:
-            hub_ship._original_sprite = pygame.image.load("hub_ship.png").convert_alpha()
+            hub_ship._original_sprite = pygame.image.load("sprites/hub_ship.png").convert_alpha()
 
         self.x = loc[0]
         self.y = loc[1]
@@ -85,7 +85,7 @@ class hub_ship:
 
     def hub_menu(self, screen, player, update_player_missions):
         # Load background image (comm_room.jpg)
-        background = pygame.image.load("hub_main_room.jpg").convert()
+        background = pygame.image.load("sprites/hub_main_room.jpg").convert()
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         
         running_menu = True
@@ -110,27 +110,36 @@ class hub_ship:
         exit_button = pygame.Rect(1600, 395, 64, 100)      # Exit
 
         while running_menu:
-            # Get current time for notifications
-            current_time = pygame.time.get_ticks()
-            
-            screen.blit(background, (0, 0))
-            
-            # Draw semi-transparent overlay (optional, for button contrast)
-            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 100))  # Black with alpha 100
-            screen.blit(overlay, (0, 0))
-            
-            # Update notifications
-            update_player_missions(mission_data[0], mission_data[1])
+            try:
+                # Get current time for notifications
+                current_time = pygame.time.get_ticks()
+                
+                screen.blit(background, (0, 0))
+                
+                # Draw semi-transparent overlay (optional, for button contrast)
+                overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 100))  # Black with alpha 100
+                screen.blit(overlay, (0, 0))
+                
+                # Update notifications
+                update_player_missions(mission_data[0], mission_data[1])
 
-            # Add text to buttons
-            comms_text = font.render("Comms", True, terminal_green)
-            update_rect = comms_text.get_rect(center=(comms_button.centerx, comms_button.centery - 5))
-            missions_text = font.render("Missions", True, terminal_green)
-            exit_text = smaller_font.render("Exit", True, terminal_green)
-            screen.blit(comms_text, update_rect)
-            screen.blit(missions_text, missions_text.get_rect(center=missions_button.center))
-            screen.blit(exit_text, exit_text.get_rect(center=exit_button.center))
+                # Get the global notification system
+                from game import notification_system
+                notification_system.update(current_time)
+                notification_system.render(screen, current_time)
+
+                # Add text to buttons
+                comms_text = font.render("Comms", True, terminal_green)
+                update_rect = comms_text.get_rect(center=(comms_button.centerx, comms_button.centery - 5))
+                missions_text = font.render("Missions", True, terminal_green)
+                exit_text = smaller_font.render("Exit", True, terminal_green)
+                screen.blit(comms_text, update_rect)
+                screen.blit(missions_text, missions_text.get_rect(center=missions_button.center))
+                screen.blit(exit_text, exit_text.get_rect(center=exit_button.center))
+                
+            except Exception as e:
+                print(f"Error in hub menu: {e}")
             
             pygame.display.flip()
             
@@ -155,3 +164,50 @@ class hub_ship:
                     if event.key == pygame.K_ESCAPE:
                         running_menu = False
                         return "planet"
+
+    def show_communications_dialog(self, screen, player):
+        """Display predefined communications dialogue."""
+        font = pygame.font.Font(None, 32)
+        dialogue = [
+            "Welcome to the Hub!",
+            "Here you can transfer passengers and cargo",
+            "between your ship and the station.",
+            "Missions can be completed here."
+        ]
+        running_dialog = True
+        while running_dialog:
+            try:
+                current_time = pygame.time.get_ticks()
+                
+                screen.fill((0, 0, 0))
+                for idx, line in enumerate(dialogue):
+                    line_surface = font.render(line, True, (255, 255, 255))
+                    line_rect = line_surface.get_rect(center=(WIDTH // 2, 100 + idx * 40))
+                    screen.blit(line_surface, line_rect)
+                
+                prompt_surface = font.render("Press any key to return", True, (255, 255, 255))
+                prompt_rect = prompt_surface.get_rect(center=(WIDTH // 2, HEIGHT - 50))
+                screen.blit(prompt_surface, prompt_rect)
+                
+                # Get the global notification system safely
+                try:
+                    from game import notification_system
+                    notification_system.update(current_time)
+                    notification_system.render(screen, current_time)
+                except Exception as e:
+                    print(f"Error rendering notifications: {e}")
+                
+                pygame.display.flip()
+                
+            except Exception as e:
+                print(f"Error in communications dialog: {e}")
+                
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN:
+                    running_dialog = False
+
+    def show_missions(self, screen, player):
+        pass

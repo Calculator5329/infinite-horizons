@@ -25,7 +25,7 @@ class comm_ship:
         :param scale_factor: Scaling factor for the comm_ship sprite.
         """
         if comm_ship._original_sprite is None:
-            comm_ship._original_sprite = pygame.image.load("communications_ship.png").convert_alpha()
+            comm_ship._original_sprite = pygame.image.load("sprites/communications_ship.png").convert_alpha()
 
         self.x = loc[0]
         self.y = loc[1]
@@ -73,7 +73,7 @@ class comm_ship:
     
     def comm_menu(self, screen, player, update_player_missions):
         # Load background image (comm_room.jpg)
-        background = pygame.image.load("comm_room.jpg").convert()
+        background = pygame.image.load("sprites/comm_room.jpg").convert()
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))
         
         running_menu = True
@@ -97,28 +97,40 @@ class comm_ship:
         exit_button = pygame.Rect(1600, 395, 64, 100)      # Exit
 
         while running_menu:
-            # Get current time for notifications
-            current_time = pygame.time.get_ticks()
-            
-            screen.blit(background, (0, 0))
-            
-            # Draw semi-transparent overlay (optional, for button contrast)
-            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 100))  # Black with alpha 100
-            screen.blit(overlay, (0, 0))
+            try:
+                # Get current time for notifications
+                current_time = pygame.time.get_ticks()
+                
+                screen.blit(background, (0, 0))
+                
+                # Draw semi-transparent overlay (optional, for button contrast)
+                overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 100))  # Black with alpha 100
+                screen.blit(overlay, (0, 0))
 
-            # Add text to buttons
-            comms_text = font.render("Comms", True, terminal_green)
-            update_rect = comms_text.get_rect(center=(comms_button.centerx, comms_button.centery - 5))
-            missions_text = font.render("Missions", True, terminal_green)
-            exit_text = smaller_font.render("Exit", True, terminal_green)
-            screen.blit(comms_text, update_rect)
-            screen.blit(missions_text, missions_text.get_rect(center=missions_button.center))
-            screen.blit(exit_text, exit_text.get_rect(center=exit_button.center))
-            
-            update_player_missions(mission_data[0], mission_data[1])
-            
-            pygame.display.flip()
+                # Add text to buttons
+                comms_text = font.render("Comms", True, terminal_green)
+                update_rect = comms_text.get_rect(center=(comms_button.centerx, comms_button.centery - 5))
+                missions_text = font.render("Missions", True, terminal_green)
+                exit_text = smaller_font.render("Exit", True, terminal_green)
+                screen.blit(comms_text, update_rect)
+                screen.blit(missions_text, missions_text.get_rect(center=missions_button.center))
+                screen.blit(exit_text, exit_text.get_rect(center=exit_button.center))
+                
+                update_player_missions(mission_data[0], mission_data[1])
+                
+                # Get the global notification system safely
+                try:
+                    from game import notification_system
+                    notification_system.update(current_time)
+                    notification_system.render(screen, current_time)
+                except Exception as e:
+                    print(f"Error rendering notifications: {e}")
+                
+                pygame.display.flip()
+                
+            except Exception as e:
+                print(f"Error in communications menu: {e}")
             
             # Event loop for menu
             for event in pygame.event.get():
@@ -153,6 +165,8 @@ class comm_ship:
         ]
         running_dialog = True
         while running_dialog:
+            current_time = pygame.time.get_ticks()
+            
             screen.fill((0, 0, 0))
             for idx, line in enumerate(dialogue):
                 line_surface = font.render(line, True, (255, 255, 255))
@@ -162,6 +176,11 @@ class comm_ship:
             prompt_surface = font.render("Press any key to return", True, (255, 255, 255))
             prompt_rect = prompt_surface.get_rect(center=(WIDTH // 2, HEIGHT - 50))
             screen.blit(prompt_surface, prompt_rect)
+            
+            # Get the global notification system
+            from game import notification_system
+            notification_system.update(current_time)
+            notification_system.render(screen, current_time)
             
             pygame.display.flip()
             
@@ -180,6 +199,10 @@ class comm_ship:
         
         planet_names = [p.name for p in self.planets]
         
+        for mission in self.missions:
+            if mission.completed:
+                self.missions.remove(mission)
+        
         # Only add an example mission if there are no missions yet
         if not self.missions:
             # Find a random destination planet that's not the current planet
@@ -190,16 +213,13 @@ class comm_ship:
                 # Fallback if no other planets are available
                 destination_name = "Distant Colony"
                 
-            # Testing
-            destination_name = self.planet.name
-                
             self.missions.append(Mission(
                 title="Smuggle Refugees",
-                description=f"Transport refugees to safety on the planet {destination_name}.",
+                description=f"Deliver refugees to the main hub on the planet {destination_name}. Refugees will automatically board your ship once accepting the mission.",
                 reward=1000,
                 steps=[
                 MissionStep(
-                    description=f"Deliver refugees to safety.",
+                    description=f"Transport refugees to {destination_name}.",
                     task=TaskDeliverPassenger(self.planet.name, destination_name, "Refugees", "hub")
                 )]
                 )
@@ -212,6 +232,8 @@ class comm_ship:
         
         running_missions = True
         while running_missions:
+            current_time = pygame.time.get_ticks()
+            
             screen.fill((0, 0, 0))
             
             # Draw the header
@@ -277,6 +299,11 @@ class comm_ship:
             prompt_surface = font.render("Press any key to return", True, (255, 255, 255))
             prompt_rect = prompt_surface.get_rect(center=(WIDTH // 2, HEIGHT - 50))
             screen.blit(prompt_surface, prompt_rect)
+            
+            # Get the global notification system
+            from game import notification_system
+            notification_system.update(current_time)
+            notification_system.render(screen, current_time)
             
             pygame.display.flip()
             

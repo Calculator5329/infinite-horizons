@@ -23,8 +23,8 @@ class Spaceship:
         :param scale_factor: Scaling factor for the spaceship sprite.
         """
         if Spaceship._original_sprite is None:
-            Spaceship._original_sprite = pygame.image.load("spaceship_1.png").convert_alpha()
-            Spaceship._sprite_boost = pygame.image.load("spaceship_1_boost.png").convert_alpha()
+            Spaceship._original_sprite = pygame.image.load("sprites/spaceship_1.png").convert_alpha()
+            Spaceship._sprite_boost = pygame.image.load("sprites/spaceship_1_boost.png").convert_alpha()
 
         self.x = x
         self.y = y
@@ -176,4 +176,3 @@ class Spaceship:
             collisions[3] = 1
         
         return collisions
-        

@@ -119,72 +119,69 @@ class AchievementPopup:
         x_position = screen_width - self.popup_width - 20
         y_offset = 20
         
-        for popup in self.active_popups:
-            if not popup["is_visible"]:
-                continue
+        # Process each popup safely
+        for popup in self.active_popups[:]:  # Make a copy of the list to safely iterate
+            try:
+                if not popup["is_visible"]:
+                    continue
+                    
+                elapsed = current_time - popup["creation_time"]
                 
-            elapsed = current_time - popup["creation_time"]
-            
-            # Handle fade in/out
-            alpha = 255
-            if elapsed < self.fade_time:
-                alpha = int(255 * (elapsed / self.fade_time))
-            elif elapsed > self.display_time - self.fade_time:
-                alpha = int(255 * (1 - (elapsed - (self.display_time - self.fade_time)) / self.fade_time))
-            
-            # Create notification surface with transparency
-            popup_surface = pygame.Surface((self.popup_width, self.popup_height), pygame.SRCALPHA)
-            
-            # Background with adjusted alpha
-            # Make sure we handle RGBA properly
-            bg_color = list(self.bg_color)
-            if len(bg_color) == 4:  # RGBA
-                bg_color[3] = int(self.bg_color[3] * alpha / 255)
-            else:  # RGB - convert to RGBA
-                bg_color = list(bg_color) + [alpha]
+                # Handle fade in/out
+                alpha = 255
+                if elapsed < self.fade_time:
+                    alpha = int(255 * (elapsed / self.fade_time))
+                elif elapsed > self.display_time - self.fade_time:
+                    alpha = int(255 * (1 - (elapsed - (self.display_time - self.fade_time)) / self.fade_time))
                 
-            pygame.draw.rect(popup_surface, tuple(bg_color), 
-                            (0, 0, self.popup_width, self.popup_height), 
-                            border_radius=8)
-            
-            # Border with adjusted alpha
-            # Convert border color to RGBA if it's not already
-            if len(self.border_color) == 3:  # RGB
-                border_color = list(self.border_color) + [alpha]
-            else:  # RGBA
-                border_color = list(self.border_color)
-                border_color[3] = int(self.border_color[3] * alpha / 255)
+                # Create notification surface with transparency
+                popup_surface = pygame.Surface((self.popup_width, self.popup_height), pygame.SRCALPHA)
                 
-            pygame.draw.rect(popup_surface, tuple(border_color), 
-                            (0, 0, self.popup_width, self.popup_height), 
-                            width=self.border_width, border_radius=8)
-            
-            # Render title and message texts
-            title_text = self.title_font.render(popup["title"], True, self.title_color)
-            title_text.set_alpha(alpha)
-            
-            message_text = self.message_font.render(popup["message"], True, self.text_color)
-            message_text.set_alpha(alpha)
-            
-            # Position for text (and icon if present)
-            icon_width = 0
-            if popup["icon"]:
-                # Apply alpha to icon
-                icon = popup["icon"].copy()
-                icon.set_alpha(alpha)
-                popup_surface.blit(icon, (self.padding, (self.popup_height - 32) // 2))
-                icon_width = 32 + self.padding
-            
-            # Draw text
-            popup_surface.blit(title_text, (icon_width + self.padding, self.padding))
-            popup_surface.blit(message_text, (icon_width + self.padding, self.padding + title_text.get_height() + 5))
-            
-            # Draw to screen
-            screen.blit(popup_surface, (x_position, y_offset))
-            
-            # Increment for next popup
-            y_offset += self.popup_height + 10
-            
+                # Create fixed-length RGBA tuples for colors
+                bg_color = tuple(self.bg_color[:3]) + (int(self.bg_color[3] * alpha / 255) if len(self.bg_color) > 3 else alpha,)
+                border_color = tuple(self.border_color[:3]) + (alpha,)
+                
+                # Draw background and border
+                pygame.draw.rect(popup_surface, bg_color, 
+                                (0, 0, self.popup_width, self.popup_height), 
+                                border_radius=8)
+                
+                pygame.draw.rect(popup_surface, border_color, 
+                                (0, 0, self.popup_width, self.popup_height), 
+                                width=self.border_width, border_radius=8)
+                
+                # Render texts with correct colors
+                title_text = self.title_font.render(popup["title"], True, self.title_color)
+                title_text.set_alpha(alpha)
+                
+                message_text = self.message_font.render(popup["message"], True, self.text_color)
+                message_text.set_alpha(alpha)
+                
+                # Position and draw content
+                icon_width = 0
+                if popup["icon"]:
+                    # Apply alpha to icon
+                    icon = popup["icon"].copy()
+                    icon.set_alpha(alpha)
+                    popup_surface.blit(icon, (self.padding, (self.popup_height - 32) // 2))
+                    icon_width = 32 + self.padding
+                
+                # Draw text
+                popup_surface.blit(title_text, (icon_width + self.padding, self.padding))
+                popup_surface.blit(message_text, (icon_width + self.padding, self.padding + title_text.get_height() + 5))
+                
+                # Draw to screen
+                screen.blit(popup_surface, (x_position, y_offset))
+                
+                # Increment for next popup
+                y_offset += self.popup_height + 10
+                
+            except Exception as e:
+                print(f"Error rendering notification: {e}")
+                # Remove problematic popup
+                if popup in self.active_popups:
+                    self.active_popups.remove(popup)
+                
             # Limit number of visible popups
             if y_offset > screen.get_height() - self.popup_height:
                 break

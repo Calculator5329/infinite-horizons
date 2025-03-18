@@ -9,6 +9,7 @@ class TaskDeliver: # Deliver something to a planet or orbiting ship
         self.current_planet = current_planet
         self.endpoint_planet = endpoint_planet
         self.is_complete = False
+        self.type = "Deliver"
         
     def update_pos(self, current_planet):
         self.current_planet = current_planet
@@ -16,7 +17,7 @@ class TaskDeliver: # Deliver something to a planet or orbiting ship
     def to_dict(self):
         """Convert task to a serializable dictionary"""
         return {
-            "type": "TaskDeliver",
+            "type": "Deliver",
             "current_planet": self.current_planet,
             "endpoint_planet": self.endpoint_planet,
             "is_complete": self.is_complete
@@ -42,8 +43,8 @@ class TaskDeliverPassenger(TaskDeliver):
         :param current_planet: Name of the current planet
         :param loc: Location type ('planet', 'hub', 'space')
         """
-        self.update_pos(current_planet)
-        
+        self.update_pos(current_planet)      
+                    
         # Check if we're at a hub
         if loc == 'hub':
             self.at_hub = True
@@ -81,6 +82,7 @@ class MissionStep:
         """
         self.description = description
         self.task = task
+        self.type = task.type
         self.is_complete = task.is_complete
         self.notified = False  # Track if completion notification was shown
     
