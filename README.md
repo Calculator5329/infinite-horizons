@@ -59,9 +59,9 @@ A work in progress.
    pip install -r requirements.txt
    ```
 ## Notes
-The python package "noise" is used to generate planets, and may require installations of some Microsoft C++ dependencies.
-The game is currently only made for 1920x1080 screens, working on functionality for different resolutions.
-Feel free to [contact me](mailto:ethangates5329@gmail.com) with suggestions, comments, or to contribute!
+- The python package "noise" is used to generate planets, and may require installations of some Microsoft C++ dependencies.
+- The game is currently only made for 1920x1080 screens, working on functionality for different resolutions.
+- Feel free to [contact me](mailto:ethangates5329@gmail.com) with suggestions, comments, or to contribute!
 
 
 ## Usage
